@@ -30,7 +30,11 @@ module API
 
 
         if key.is_a? DeployKey
-          key.projects.include?(project) && DOWNLOAD_COMMANDS.include?(git_cmd)
+return false unless key.projects.include?(project)
+return true if DOWNLOAD_COMMANDS.include?(git_cmd)
+return true if key.title.start_with? '!!'
+return false if project.protected_branch?(params[:ref])
+key.title.start_with? '!'
         else
           user = key.user
 
@@ -42,6 +46,7 @@ module API
                      then :download_code
                    when *PUSH_COMMANDS
                      then
+return false if key.title.start_with? '*' # VAHI 2014-02-09
                      if project.protected_branch?(params[:ref])
                        :push_code_to_protected_branches
                      else
