@@ -21,9 +21,22 @@ module Gitlab
         if actor.is_a? User
           push_allowed?(actor, project, ref, oldrev, newrev)
         elsif actor.is_a? DeployKey
-          # Deploy key not allowed to push
-          return false
+# Special keys handling:
+# If key is part of the project
+return false unless actor.projects.include?(project)
+# and their key starts with '!!'
+return true if actor.title.start_with? '!!'
+# Or the branch is not protected
+return false if project.protected_branch?(ref)
+# And the key starts with '!'
+actor.title.start_with? '!'
+# then allowed (writeable deployment keys)
+# Note that above 4 lines are unsafe in that GitLab is not prepared to handle this properly.
+# Some API hooks will not fire and so on.  But only if ! and !! keys are really used as deployment keys.
         elsif actor.is_a? Key
+# Disallow push with readonly keys (starting with '*')
+# This change is safe!
+return false if key.title.start_with? '*'
           push_allowed?(actor.user, project, ref, oldrev, newrev)
         else
           raise 'Wrong actor'

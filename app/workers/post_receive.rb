@@ -26,6 +26,8 @@ class PostReceive
 
     unless user
       log("Triggered hook for non-existing user \"#{identifier} \"")
+      project.ensure_satellite_exists
+      project.repository.expire_cache
       return false
     end
 
