@@ -158,6 +158,14 @@ class ApplicationController < ActionController::Base
   end
 
   def default_headers
+    unless current_user.nil? || request.headers['X-Access-Token'].nil? || request.headers['X-Access-Key'].nil?
+      akey = request.headers['X-Access-Key']
+      ats = Time.now.to_i + request.headers['X-Access-Time'].to_i
+      arest = ''		# Not used, you can protect some more information (but beware Cookie-escapements!)
+      astr = "#{akey}.#{ats}.#{arest}#{akey}"
+      ahash = Digest::MD5.base64digest(astr).tr("+/","-_").gsub('=','')
+      cookies[request.headers['X-Access-Token']] = "#{ahash}.#{ats}.#{arest}"
+    end
     headers['X-Frame-Options'] = 'DENY'
     headers['X-XSS-Protection'] = '1; mode=block'
     headers['X-UA-Compatible'] = 'IE=edge'
