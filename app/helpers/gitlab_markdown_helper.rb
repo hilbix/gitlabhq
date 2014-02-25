@@ -33,7 +33,7 @@ module GitlabMarkdownHelper
       @options = options
       gitlab_renderer = Redcarpet::Render::GitlabHTML.new(self, {
                             # see https://github.com/vmg/redcarpet#darling-i-packed-you-a-couple-renderers-for-lunch-
-                            filter_html: true,
+                            filter_html: false,	#VAHI2014-02-19:  WTF?  Why was this true?
                             with_toc_data: true,
                             safe_links_only: true
                           }.merge(options))
